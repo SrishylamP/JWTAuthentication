@@ -1,2 +1,0 @@
-# JWTAuthentication
-JWT
