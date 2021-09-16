@@ -35,7 +35,7 @@ namespace JWTAuthentication.Controllers
         public async Task<ResponseMessage> Login([FromBody] LoginModel model)
         {
             var resObj = new ResponseMessage();
-            var user = await dbContext.Users.FirstOrDefaultAsync(e => e.Email == model.UserName && e.Password == CreateMD5(model.Password) && e.IsActive);
+            var user = await dbContext.Users.FirstOrDefaultAsync(e => e.Email == model.Email && e.Password == CreateMD5(model.Password) && e.IsActive);
             if (user != null)
             {
                 resObj.IsSuccess = true;
@@ -76,7 +76,7 @@ namespace JWTAuthentication.Controllers
             }
             else
             {
-                var userExist = await dbContext.Users.Where(e => e.Email == model.UserName).FirstOrDefaultAsync();
+                var userExist = await dbContext.Users.Where(e => e.Email == model.Email).FirstOrDefaultAsync();
                 if (userExist != null && userExist.IsActive)
                 {
                     if (userExist.NoOfWrongAttempts < 2)
