@@ -35,9 +35,7 @@ namespace JWTAuthentication
                 c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
             });
             // For Identity
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<PMSDbContext>()
-                .AddDefaultTokenProviders();
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
