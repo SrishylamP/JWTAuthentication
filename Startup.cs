@@ -32,12 +32,12 @@ namespace JWTAuthentication
             });
             services.AddCors(c =>
             {
-                c.AddPolicy("AllowOrigin", options => options.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod());
+                c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
             });
             // For Identity
-            //services.AddIdentity<User, IdentityRole>()
-            //    .AddEntityFrameworkStores<PMSDbContext>()
-            //    .AddDefaultTokenProviders();           
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<PMSDbContext>()
+                .AddDefaultTokenProviders();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,7 +54,7 @@ namespace JWTAuthentication
 
             app.UseRouting();
 
-            app.UseCors(options => options.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod());
+            app.UseCors(options => options.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
             app.UseEndpoints(endpoints =>
             {

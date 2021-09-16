@@ -32,11 +32,25 @@ namespace JWTAuthentication.Controllers
 
         [HttpPost]
         [Route("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        public async Task<ResponseMessage> Login([FromBody] LoginModel model)
         {
+            var resObj = new ResponseMessage();
             var user = await dbContext.Users.FirstOrDefaultAsync(e => e.Email == model.UserName && e.Password == CreateMD5(model.Password) && e.IsActive);
             if (user != null)
             {
+                resObj.IsSuccess = true;
+                resObj.message = Constants.LOGINSUCCESSFULL + " " + user.FirstName + " " + user.LastName;
+                resObj.NoOfAttempts = 0;
+                resObj.RoleId = user.RoleId;
+                resObj.email = user.Email;
+                resObj.IsFirstTimeUser = user.IsFirstTimeUser;
+                resObj.UserId = user.UserId;
+                resObj.EmployeeId = user.EmployeeId;
+
+                //Update db
+                user.NoOfWrongAttempts = 0;
+                await dbContext.SaveChangesAsync();
+
                 var userRole = await dbContext.UserRoles.FirstOrDefaultAsync(e => e.RoleId == user.RoleId);
                 var authClaims = new List<Claim>
                 {
@@ -51,18 +65,48 @@ namespace JWTAuthentication.Controllers
                 var token = new JwtSecurityToken(
                     issuer: _configuration["JWT:ValidIssuer"],
                     audience: _configuration["JWT:ValidAudience"],
-                    expires: DateTime.Now.AddHours(3),
+                    expires: DateTime.Now.AddMinutes(30),
                     claims: authClaims,
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                     );
-
-                return Ok(new
-                {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),
-                    expiration = token.ValidTo
-                });
+                
+                resObj.Token = new JwtSecurityTokenHandler().WriteToken(token);
+                resObj.Expires = token.ValidTo;
+                return resObj;
             }
-            return Unauthorized();
+            else
+            {
+                var userExist = await dbContext.Users.Where(e => e.Email == model.UserName).FirstOrDefaultAsync();
+                if (userExist != null && userExist.IsActive)
+                {
+                    if (userExist.NoOfWrongAttempts < 2)
+                    {
+                        userExist.NoOfWrongAttempts++;
+                        resObj.message = Constants.InvalidLoginCredentials;
+                    }
+                    else
+                    {
+                        userExist.NoOfWrongAttempts++;
+                        userExist.IsActive = false;
+                        resObj.message = Constants.LoginUserLocked;
+                    }
+
+                }
+                else if (userExist == null)
+                {
+                    resObj.message = Constants.LoginUserLocked;
+                }
+                else
+                    resObj.message = Constants.LoginUserLocked;
+
+                resObj.IsSuccess = false;
+                resObj.NoOfAttempts = userExist != null ? userExist.NoOfWrongAttempts : 0;
+                await dbContext.SaveChangesAsync();
+
+                return resObj;
+
+            }
+            //return Unauthorized();
         }
         public static string CreateMD5(string input)
         {
