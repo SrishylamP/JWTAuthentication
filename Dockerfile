@@ -3,8 +3,8 @@
 FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS base
 WORKDIR /app
 EXPOSE 80
-EXPOSE 443
 ENV ConnectionStrings:DefaultConnection="Server=IMCLBCP41-BLL\\SQLEXPRESS2019; Database=PMS; Trusted_Connection=True; MultipleActiveResultSets=true"
+ENV ASPNETCORE_ENVIRONMENT="Production"
 ENV Jwt:Secret="ByYM000OLlMQG6VVVp1OH7Xzyr7gHuw1qvUC5dcGt3SNM"
 ENV Jwt:Issuer="http://localhost:44340"
 ENV Jwt:Audience="http://localhost:4200"
