@@ -49,6 +49,14 @@ namespace JWTAuthentication
             }
 
             //app.UseHttpsRedirection();
+            var pathBase = Configuration["API_PATH_BASE"]; 
+
+            if (!string.IsNullOrWhiteSpace(pathBase))
+            {
+                app.UsePathBase($"/{pathBase.TrimStart('/')}");
+            }
+
+            app.UseStaticFiles();
 
             app.UseRouting();
 
